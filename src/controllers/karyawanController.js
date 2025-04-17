@@ -1,6 +1,5 @@
 const db = require('../config/db');
 
-// Fungsi generate NIP aman
 function generateNIP(callback) {
     const year = new Date().getFullYear();
     const likePattern = `${year}%`;
@@ -27,18 +26,15 @@ exports.createKaryawan = (req, res) => {
     const insert_by = req.user.data;  // dari token
     const insert_at = new Date();
 
-    // Validasi field wajib
     if (!nama || !alamat || !gend || !photo || !tgl_lahir || !status) {
         return res.status(400).json({ message: 'Semua field wajib diisi' });
     }
 
-    // Validasi karakter tidak diizinkan dalam nama
-    const specialCharPattern = /[<>$%#@!]/;
+    const specialCharPattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
     if (specialCharPattern.test(nama)) {
         return res.status(400).json({ message: 'Nama mengandung karakter tidak diizinkan' });
     }
 
-    // Validasi gender hanya L atau P
     if (gend !== 'L' && gend !== 'P') {
         return res.status(400).json({ message: 'Gend hanya boleh L atau P' });
     }
@@ -52,7 +48,6 @@ exports.createKaryawan = (req, res) => {
         const useId = id !== undefined ? id : null;
 
         if (useId !== null) {
-            // kalau id ada di body, langsung insert pakai itu
             const insertQuery = `
               INSERT INTO karyawan 
               (id, nip, nama, alamat, gend, photo, tgl_lahir, status, insert_at, insert_by) 
@@ -75,7 +70,6 @@ exports.createKaryawan = (req, res) => {
                 }
             );
         } else {
-            // kalau nggak ada id di body, baru getNextId
             getNextId((err, nextId) => {
                 if (err) {
                     console.error('Error get next ID:', err);
@@ -111,18 +105,15 @@ exports.createKaryawan = (req, res) => {
 exports.getKaryawanList = (req, res) => {
     const { keyword = '', start = 0, count = 10 } = req.query;
   
-    // Validasi start & count harus angka
     if (isNaN(start) || isNaN(count)) {
       return res.status(400).json({ message: 'Parameter start dan count harus berupa angka' });
     }
   
-    // Validasi karakter khusus di keyword
-    const specialCharPattern = /[<>$%#@!]/;
+    const specialCharPattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
     if (specialCharPattern.test(keyword)) {
       return res.status(400).json({ message: 'Keyword mengandung karakter tidak diizinkan' });
     }
   
-    // Query ambil data karyawan + filtering keyword + pagination
     const query = `
       SELECT id, nip, nama, alamat, gend, photo, tgl_lahir, status, insert_at, insert_by, update_at, update_by 
       FROM karyawan 
@@ -155,23 +146,19 @@ exports.getKaryawanList = (req, res) => {
     const update_by = req.user.data;
     const update_at = new Date();
   
-    // Validasi field wajib
     if (!nama || !alamat || !gend || !photo || !tgl_lahir || !status) {
       return res.status(400).json({ message: 'Semua field wajib diisi' });
     }
   
-    // Validasi karakter nama
-    const specialCharPattern = /[<>$%#@!]/;
+    const specialCharPattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
     if (specialCharPattern.test(nama)) {
       return res.status(400).json({ message: 'Nama mengandung karakter tidak diizinkan' });
     }
   
-    // Validasi gender
     if (gend !== 'L' && gend !== 'P') {
       return res.status(400).json({ message: 'Gend hanya boleh L atau P' });
     }
   
-    // Cek apakah NIP ada
     const checkQuery = 'SELECT * FROM karyawan WHERE nip = ?';
     db.query(checkQuery, [nip], (checkErr, checkResults) => {
       if (checkErr) {
@@ -183,7 +170,6 @@ exports.getKaryawanList = (req, res) => {
         return res.status(404).json({ message: 'Data karyawan tidak ditemukan' });
       }
   
-      // Query update
       const updateQuery = `
         UPDATE karyawan 
         SET nama = ?, alamat = ?, gend = ?, photo = ?, tgl_lahir = ?, status = ?, update_at = ?, update_by = ?
@@ -210,13 +196,11 @@ exports.getKaryawanList = (req, res) => {
     const update_by = req.user.data;
     const update_at = new Date();
   
-    // Validasi NIP tidak boleh kosong
     if (!nip) {
       return res.status(400).json({ message: 'NIP wajib diisi' });
     }
   
-    // Cek special character di NIP
-    const specialCharPattern = /[<>$%#@!]/;
+    const specialCharPattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
     if (specialCharPattern.test(nip)) {
       return res.status(400).json({ message: 'NIP mengandung karakter tidak diizinkan' });
     }
