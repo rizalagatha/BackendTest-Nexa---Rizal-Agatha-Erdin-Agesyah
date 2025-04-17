@@ -10,7 +10,7 @@ function authenticateToken(req, res, next) {
   jwt.verify(token, secretKey, (err, decoded) => {
     if (err) return res.status(403).json({ message: 'Token tidak valid' });
 
-    req.user = decoded; // simpan hasil decode token
+    req.user = decoded; 
     next();
   });
 }
